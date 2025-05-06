@@ -24,7 +24,7 @@ def parse_and_save_feed(feed):
 
         pub_date = None
         if entry.get("published_parsed"):
-            pub_date = datetime(*entry.published_parsed[:6], tzinfo=timezone.utc)
+            pub_date = datetime(*entry["published_parsed"][:6], tzinfo=timezone.utc)
 
         description = entry.get("summary", "").strip()
         link = entry.get("link", "").strip()
