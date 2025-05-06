@@ -1,6 +1,7 @@
 # Django RSS Reader
 
 ![Django Tests](https://github.com/gil-ss/django-rss-reader/actions/workflows/tests.yml/badge.svg)
+[![codecov](https://codecov.io/gh/gil-ss/django-rss-reader/branch/main/graph/badge.svg)](https://codecov.io/gh/seu-usuario/seu-repo)
 
 A Django-based RSS feed reader with user authentication and per-user feed storage.
 
