@@ -1,0 +1,24 @@
+# Python
+*.pyc
+__pycache__/
+*.pyo
+
+# Virtualenv
+.venv/
+env/
+ENV/
+
+# Django stuff:
+db.sqlite3
+/static/
+media/
+
+# VS Code
+.vscode/
+.idea
+
+# Mac / Linux
+.DS_Store
+
+# dotenv
+.env
