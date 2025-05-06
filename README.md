@@ -1,5 +1,7 @@
 # Django RSS Reader
 
+![Django Tests](https://github.com/gil-ss/django-rss-reader/actions/workflows/tests.yml/badge.svg)
+
 A Django-based RSS feed reader with user authentication and per-user feed storage.
 
 🚀 Stack:
