@@ -1,9 +1,12 @@
+import feedparser
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import HttpResponse
 from django.views.generic import ListView, CreateView, DetailView, UpdateView, DeleteView
 from django.urls import reverse_lazy
+from django.contrib import messages
+from django.core.paginator import Paginator
 from feeds.models import RSSFeed
 from feeds.services import parse_and_save_feed
-from django.core.paginator import Paginator
 
 
 class FeedListView(LoginRequiredMixin, ListView):
@@ -14,9 +17,6 @@ class FeedListView(LoginRequiredMixin, ListView):
         model (Model): The Django model associated with this view.
         template_name (str): The path to the HTML template.
         context_object_name (str): The name of the object list in the template context.
-
-    Methods:
-        get_queryset(): Returns only the feeds owned by the current user.
     """
     model = RSSFeed
     template_name = "feeds/feed_list.html"
@@ -36,16 +36,14 @@ class FeedCreateView(LoginRequiredMixin, CreateView):
     """
     View that allows a logged-in user to add a new RSS feed.
 
-    On successful creation, it triggers the parsing and storage of items from the feed.
+    Validates the URL by checking if the parsed RSS has content.
+    On success, saves the feed and parses its items.
 
     Attributes:
         model (Model): The Django model used for creating a new instance.
         fields (list): The fields to be included in the form.
         template_name (str): The path to the HTML template.
         success_url (str): URL to redirect to after successful creation.
-
-    Methods:
-        form_valid(form): Attaches user and triggers feed parsing.
     """
     model = RSSFeed
     fields = ["url"]
@@ -56,6 +54,10 @@ class FeedCreateView(LoginRequiredMixin, CreateView):
         """
         Called when the submitted form is valid.
 
+        Checks if the URL points to a valid RSS feed.
+        If valid, saves the feed and triggers item parsing.
+        Otherwise, shows an error message and redisplays the form.
+
         Args:
             form (ModelForm): The validated form instance.
 
@@ -63,23 +65,22 @@ class FeedCreateView(LoginRequiredMixin, CreateView):
             HttpResponse: The HTTP response after processing.
         """
         form.instance.user = self.request.user
+        url = form.cleaned_data["url"]
+
+        parsed = feedparser.parse(url)
+        if not parsed.entries or parsed.bozo:
+            messages.error(self.request, "Invalid RSS feed URL.")
+            return self.form_invalid(form)
+
         response = super().form_valid(form)
         parse_and_save_feed(self.object)
+        messages.success(self.request, "Feed added successfully!")
         return response
 
 
 class FeedDetailView(LoginRequiredMixin, DetailView):
     """
     View that shows a single RSS feed and its associated items, with pagination.
-
-    Attributes:
-        model (Model): The Django model for the detail view.
-        template_name (str): The HTML template used to render the view.
-        context_object_name (str): The name of the feed in the template context.
-
-    Methods:
-        get_queryset(): Limits access to feeds owned by the current user.
-        get_context_data(**kwargs): Adds paginated items to the context.
     """
     model = RSSFeed
     template_name = "feeds/feed_detail.html"
@@ -107,11 +108,8 @@ class FeedDetailView(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         items = self.object.items.all().order_by("-pub_date")
         paginator = Paginator(items, 5)  # Show 5 items per page
-
         page_number = self.request.GET.get("page")
-        page_obj = paginator.get_page(page_number)
-
-        context["page_obj"] = page_obj
+        context["page_obj"] = paginator.get_page(page_number)
         return context
 
 
@@ -125,7 +123,29 @@ class FeedUpdateView(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy("feed-list")
 
     def get_queryset(self):
+        """
+        Restricts editing to feeds owned by the current user.
+
+        Returns:
+            QuerySet: A queryset limited to the user's feeds.
+        """
         return RSSFeed.objects.filter(user=self.request.user)
+
+    def form_valid(self, form):
+        """
+        Called when the submitted form is valid for an update.
+
+        Displays a success message.
+
+        Args:
+            form (ModelForm): The validated form instance.
+
+        Returns:
+            HttpResponse: The HTTP response after processing.
+        """
+        messages.success(self.request, "Feed updated successfully.")
+        return super().form_valid(form)
+
 
 class FeedDeleteView(LoginRequiredMixin, DeleteView):
     """
@@ -136,4 +156,23 @@ class FeedDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy("feed-list")
 
     def get_queryset(self):
+        """
+        Restricts deletion to feeds owned by the current user.
+
+        Returns:
+            QuerySet: A queryset limited to the user's feeds.
+        """
         return RSSFeed.objects.filter(user=self.request.user)
+
+    def post(self, request, *args, **kwargs):
+        """
+        Handles POST request to delete the feed.
+
+        Returns:
+            HttpResponseRedirect: Redirects to feed list with a success message.
+        """
+        messages.add_message(self.request, messages.WARNING, "Feed deleted successfully.")
+        return super().post(request, *args, **kwargs)
+
+
+

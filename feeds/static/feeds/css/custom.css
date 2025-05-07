@@ -1,0 +1,28 @@
+.fade-out {
+  opacity: 0;
+  transition: opacity 3s ease-out;
+}
+
+.alert-danger {
+  background-color: #f8d7da !important;
+  color: #721c24 !important;
+  border-color: #f5c6cb !important;
+}
+
+.alert-fixed {
+  position: fixed;
+  top: 70px;
+  right: 20px;
+  z-index: 1050;
+  max-width: 400px;
+  opacity: 1;
+  transition: opacity 3s ease-in-out;
+  pointer-events: auto;
+}
+
+.alert-fixed.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+

@@ -1,7 +1,11 @@
+import time
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 from feeds.models import RSSFeed
+from unittest.mock import patch
+from types import SimpleNamespace
+
 
 User = get_user_model()
 
@@ -55,10 +59,20 @@ class FeedCreateViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "feeds/feed_form.html")
 
-    def test_feed_create_view_post_creates_feed(self):
-        form_data = {"url": "http://example.com/rss"}
-        response = self.client.post(reverse("feed-add"), data=form_data)
-
+    @patch("feeds.views.feed.feedparser.parse")
+    def test_feed_create_view_post_creates_feed(self, mock_parse):
+        mock_parse.return_value = SimpleNamespace(
+            entries=[{
+                "title": "Sample",
+                "summary": "A sample item",
+                "link": "http://example.com/sample",
+                "published_parsed": time.strptime("2025-05-07 10:00:00", "%Y-%m-%d %H:%M:%S"),
+                "media_thumbnail": [{"url": "http://example.com/image.jpg"}],
+            }],
+            feed={"title": "Test Feed"},
+            bozo=False
+        )
+        response = self.client.post(reverse("feed-add"), {"url": "http://example.com/rss"})
         self.assertEqual(response.status_code, 302)
         self.assertEqual(RSSFeed.objects.count(), 1)
         self.assertEqual(RSSFeed.objects.first().user, self.user)
