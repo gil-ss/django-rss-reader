@@ -1,6 +1,5 @@
 # 📰 Django RSS Reader 🐍
 
-
 ![Django Tests](https://github.com/gil-ss/django-rss-reader/actions/workflows/tests.yml/badge.svg)
 [![codecov](https://codecov.io/gh/gil-ss/django-rss-reader/branch/main/graph/badge.svg)](https://codecov.io/gh/gil-ss/django-rss-reader)
 ![License](https://img.shields.io/badge/License-MIT-green)
@@ -20,6 +19,11 @@ This application allows users to subscribe to RSS feeds, view feed items, and ma
 * **Responsive UI**: Clean and responsive user interface.
 * **Custom Messages**: Success and error messages with customizable colors.
 
+---
+
+### Demo
+
+![Demo](https://github.com/user-attachments/assets/5ef5bde4-dc5d-4b11-a07a-3fda9c7d68c6)
 ---
 
 ### Installation

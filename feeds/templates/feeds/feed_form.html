@@ -1,9 +1,25 @@
 {% extends "base.html" %}
+{% load form_tags %}
+
 {% block content %}
-<h2>Add New Feed</h2>
-<form method="post" novalidate>
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-success">Add Feed</button>
-</form>
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h2 class="mb-4">Add New RSS Feed</h2>
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="mb-3">
+                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                    {{ field|add_class:"form-control bg-white" }}
+                    {% if field.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ field.errors|join:"<br>"|safe }}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-success">Add Feed</button>
+        </form>
+    </div>
+</div>
 {% endblock %}
