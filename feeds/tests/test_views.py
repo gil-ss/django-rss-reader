@@ -67,3 +67,43 @@ class FeedCreateViewTest(TestCase):
         self.client.logout()
         response = self.client.get(reverse("feed-add"))
         self.assertRedirects(response, "/login/?next=/add/")
+
+
+class FeedUpdateDeleteViewTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="john", password="secret")
+        self.other_user = User.objects.create_user(username="alice", password="secret")
+        self.feed = RSSFeed.objects.create(user=self.user, url="http://example.com/rss")
+        self.other_feed = RSSFeed.objects.create(user=self.other_user, url="http://example.com/rss2")
+        self.client.login(username="john", password="secret")
+
+    def test_get_update_view_as_owner(self):
+        response = self.client.get(reverse("feed-edit", kwargs={"pk": self.feed.pk}))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "feeds/feed_form.html")
+
+    def test_post_update_view_as_owner(self):
+        response = self.client.post(reverse("feed-edit", kwargs={"pk": self.feed.pk}), {
+            "url": "http://updated.com/rss"
+        })
+        self.assertRedirects(response, reverse("feed-list"))
+        self.feed.refresh_from_db()
+        self.assertEqual(self.feed.url, "http://updated.com/rss")
+
+    def test_update_view_other_user_returns_404(self):
+        response = self.client.get(reverse("feed-edit", kwargs={"pk": self.other_feed.pk}))
+        self.assertEqual(response.status_code, 404)
+
+    def test_get_delete_view_as_owner(self):
+        response = self.client.get(reverse("feed-delete", kwargs={"pk": self.feed.pk}))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "feeds/feed_confirm_delete.html")
+
+    def test_post_delete_view_as_owner(self):
+        response = self.client.post(reverse("feed-delete", kwargs={"pk": self.feed.pk}))
+        self.assertRedirects(response, reverse("feed-list"))
+        self.assertFalse(RSSFeed.objects.filter(pk=self.feed.pk).exists())
+
+    def test_delete_view_other_user_returns_404(self):
+        response = self.client.get(reverse("feed-delete", kwargs={"pk": self.other_feed.pk}))
+        self.assertEqual(response.status_code, 404)

@@ -1,5 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import ListView, CreateView, DetailView
+from django.views.generic import ListView, CreateView, DetailView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from feeds.models import RSSFeed
 from feeds.services import parse_and_save_feed
@@ -113,3 +113,27 @@ class FeedDetailView(LoginRequiredMixin, DetailView):
 
         context["page_obj"] = page_obj
         return context
+
+
+class FeedUpdateView(LoginRequiredMixin, UpdateView):
+    """
+    View to update an existing RSSFeed. Only the owner can update.
+    """
+    model = RSSFeed
+    fields = ["url"]
+    template_name = "feeds/feed_form.html"
+    success_url = reverse_lazy("feed-list")
+
+    def get_queryset(self):
+        return RSSFeed.objects.filter(user=self.request.user)
+
+class FeedDeleteView(LoginRequiredMixin, DeleteView):
+    """
+    View to delete an RSSFeed. Only the owner can delete.
+    """
+    model = RSSFeed
+    template_name = "feeds/feed_confirm_delete.html"
+    success_url = reverse_lazy("feed-list")
+
+    def get_queryset(self):
+        return RSSFeed.objects.filter(user=self.request.user)
