@@ -36,5 +36,5 @@ class AuthViewTests(TestCase):
             "password": "secret",
         })
         self.assertRedirects(login, reverse("feed-list"))
-        logout = self.client.get(reverse("logout"))
+        logout = self.client.post(reverse("logout"))
         self.assertRedirects(logout, reverse("login"))
