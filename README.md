@@ -3,9 +3,6 @@
 
 ![Django Tests](https://github.com/gil-ss/django-rss-reader/actions/workflows/tests.yml/badge.svg)
 [![codecov](https://codecov.io/gh/gil-ss/django-rss-reader/branch/main/graph/badge.svg)](https://codecov.io/gh/gil-ss/django-rss-reader)
-
-![Python](https://img.shields.io/badge/Python-3.13-blue?style=for-the-badge\&logo=python)
-![Django](https://img.shields.io/badge/Django-5.0-green?style=for-the-badge\&logo=django)
 ![License](https://img.shields.io/badge/License-MIT-green)
 ![Status](https://img.shields.io/badge/Status-Learning%20Project-yellow)
 
